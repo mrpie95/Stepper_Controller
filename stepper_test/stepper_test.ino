@@ -2,6 +2,7 @@
 #define DOWN LOW
 #define TOP 0
 #define BOTTOM 1
+#define baudRate 9600
 
 //set pin values
 const int directionPin = 9;
@@ -12,10 +13,11 @@ const int btnDownPin = 12;
 //global variables
 const int fastPulseWidth = 35;  
 int position;
+int buttonState;
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(baudRate);
   Serial.println("Starting Steppertest");
 
   pinMode(directionPin, OUTPUT);
@@ -23,28 +25,43 @@ void setup() {
 
   pinMode(btnUpPin, INPUT);
   pinMode(btnDownPin, INPUT);
+
+  //used for debugging button behaviour
+  //Serial.println(digitalRead(btnUpPin));
+  //Serial.println(digitalRead(btnDownPin));
 }
 
 void loop() {
 
 
   //listen for UP press
-  if(digitalRead(btnUpPin) == 1){
-    Serial.println("up pressed");
+  if(digitalRead(btnUpPin) == HIGH){
+    if(buttonState == LOW){
+      buttonState = HIGH;
 
-    if(position == BOTTOM){
-      Serial.println("Movement started");
-      digitalWrite(directionPin, UP);
-      moveMotor(30000);
-      position = TOP;
-    }
-    else{
-      Serial.println("already on top!");
-    }
+      if(position == BOTTOM){
+        Serial.println("Up pressed");
+        Serial.println("Movement started");
+        digitalWrite(directionPin, UP);
+        moveMotor(30000);
+        position = TOP;
+      }
+
+      else{
+        Serial.println("Up pressed");
+        Serial.println("already on top!");
+      }
+
+      while(buttonState == 1){
+        buttonState = digitalRead(btnUpPin);
+      }
+      buttonState = LOW;
   }
+}
 
   //listen for DOWN press
   if (digitalRead(btnDownPin) == 1){
+    
     Serial.println("down pressed");
       
       if(position == TOP){
@@ -54,10 +71,13 @@ void loop() {
       position = BOTTOM;
     }
     else{
-      Serial.println("already on bottom!");
+      while(digitalRead(btnDownPin) == 1){
+        Serial.println("already on bottom!");
+      }
+    }
     }
   }
-}
+
 
 void moveMotor(int steps){
   for(int i = 0; i < steps; i++){
