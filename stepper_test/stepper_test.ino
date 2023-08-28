@@ -1,4 +1,3 @@
-
 #define BTN_UP_PIN 13
 #define BTN_DOWN_PIN 12
 #define UP HIGH
@@ -27,14 +26,9 @@ void setup() {
 
   pinMode(BTN_UP_PIN, INPUT);
   pinMode(BTN_DOWN_PIN, INPUT);
-
- 
 }
 
-
-
 void loop() { 
-
   if (digitalRead(BTN_UP_PIN) == 1){
     Serial.println("up pressed");
     moveMotor(UP, 10000);
@@ -81,5 +75,4 @@ void moveMotor(int direction, int steps){
   else {
       Serial.println("Criteria for movement not met");
   }
-
 }
