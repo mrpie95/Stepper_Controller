@@ -29,6 +29,8 @@ void setup() {
   pinMode(BTN_DOWN_PIN, INPUT);
 
  
+}
+
 
 
 void loop() { 
