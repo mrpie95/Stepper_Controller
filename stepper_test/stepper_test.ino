@@ -37,7 +37,7 @@ void loop() {
 
   if (digitalRead(BTN_UP_PIN) == 1){
     Serial.println("up pressed");
-    moveMotor(UP, 30000);
+    moveMotor(UP, 10000);
     delay(100);
     moveMotor(UP, 8000);
     Serial.println("Movement Complete");
