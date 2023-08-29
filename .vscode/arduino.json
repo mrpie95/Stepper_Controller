@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "port": "COM10",
-    "sketch": "initialisation\\start.ino"
+    "sketch": "stepper_test\\stepper_test.ino"
 }
