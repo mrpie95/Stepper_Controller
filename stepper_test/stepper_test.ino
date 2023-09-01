@@ -2,7 +2,7 @@
 #define DOWN LOW
 #define TOP 0
 #define BOTTOM 1
-#define baudRate 9600
+#define BAUDRATE 9600
 
 //set pin values
 const int directionPin = 9;
@@ -22,7 +22,7 @@ bool buttonState = false;
 
 
 void setup() {
-  Serial.begin(baudRate);
+  Serial.begin(BAUDRATE);
   Serial.println("Starting Steppertest");
 
   pinMode(directionPin, OUTPUT);
@@ -52,8 +52,7 @@ void loop() {
         if(position == BOTTOM){
           Serial.println("Up pressed");
           Serial.println("Movement started");
-          digitalWrite(directionPin, UP);
-          moveMotor(30000);
+          moveMotor(UP, 30000);
           position = TOP;
         }
 
@@ -83,8 +82,7 @@ void loop() {
         if(position == TOP){
           Serial.println("Down pressed");
           Serial.println("Movement started");
-          digitalWrite(directionPin, DOWN);
-          moveMotor(30000);
+          moveMotor(DOWN, 30000);
           position = BOTTOM;
         }
 
@@ -102,7 +100,8 @@ void loop() {
   }
 }
 
-void moveMotor(int steps){
+void moveMotor(int direction, int steps){
+  digitalWrite(directionPin, direction);
   for(int i = 0; i < steps; i++){
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(fastPulseWidth);
