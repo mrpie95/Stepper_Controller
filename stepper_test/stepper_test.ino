@@ -1,85 +1,111 @@
-
-#define BTN_UP_PIN 13
-#define BTN_DOWN_PIN 12
 #define UP HIGH
 #define DOWN LOW
 #define TOP 0
 #define BOTTOM 1
+#define BAUDRATE 9600
 
-byte directionPin = 9;
-byte stepPin = 8;
-int numberOfSteps = 30000;
-byte ledPin = 13;
-int pulseWidthMicros = 20;  
-int millisbetweenSteps = 1;
-int position = TOP;
+//set pin values
+const int directionPin = 9;
+const int stepPin = 8;
+const int btnUpPin = 13;
+const int btnDownPin = 12;
+
+//global variables
+const int debounceDelay = 500;
+const unsigned long fastPulseWidth = 35;  
+
+int position;
+unsigned long lastDebounceTime = 0;
 
 
-void setup() { 
+bool buttonState = false;
 
-  Serial.begin(9600);
-  Serial.println("Starting StepperTest");
-  digitalWrite(ledPin, LOW);
+
+void setup() {
+  Serial.begin(BAUDRATE);
+  Serial.println("Starting Steppertest");
 
   pinMode(directionPin, OUTPUT);
   pinMode(stepPin, OUTPUT);
-  pinMode(ledPin, OUTPUT);
 
-  pinMode(BTN_UP_PIN, INPUT);
-  pinMode(BTN_DOWN_PIN, INPUT);
+  pinMode(btnUpPin, INPUT);
+  pinMode(btnDownPin, INPUT);
 
- 
+  //used for debugging button behaviour
+  //Serial.println(digitalRead(btnUpPin));
+  //Serial.println(digitalRead(btnDownPin));
 }
 
+void loop() {
+  unsigned long currentMillis = millis();
 
+  //listen for UP press
+  if(digitalRead(btnUpPin) == HIGH){
 
-void loop() { 
+    if(!buttonState){
 
-  if (digitalRead(BTN_UP_PIN) == 1){
-    Serial.println("up pressed");
-    moveMotor(UP, 30000);
-    delay(100);
-    moveMotor(UP, 8000);
-    Serial.println("Movement Complete");
+      if (currentMillis - lastDebounceTime >= debounceDelay) {
+        lastDebounceTime = currentMillis;
+
+        buttonState = true;
+
+        if(position == BOTTOM){
+          Serial.println("Up pressed");
+          Serial.println("Movement started");
+          moveMotor(UP, 30000);
+          position = TOP;
+        }
+
+        else{
+          Serial.println("Up pressed");
+          Serial.println("Already on top!");
+        }
+
+        while(buttonState == 1){
+          buttonState = digitalRead(btnUpPin);
+        }
+        buttonState = false;
+      }
+    }
   }
 
-  if (digitalRead(BTN_DOWN_PIN) == 1){
-    Serial.println("down pressed");
-    moveMotor(DOWN, 30000);
-    delay(100);
-    moveMotor(DOWN, 8000);
-    Serial.println("Movement Complete");
+  //listen for DOWN press
+  if(digitalRead(btnDownPin) == HIGH){
+
+    if(!buttonState){
+
+      if (currentMillis - lastDebounceTime >= debounceDelay) {
+        lastDebounceTime = currentMillis;
+
+        buttonState = true;
+
+        if(position == TOP){
+          Serial.println("Down pressed");
+          Serial.println("Movement started");
+          moveMotor(DOWN, 30000);
+          position = BOTTOM;
+        }
+
+        else{
+          Serial.println("Down pressed");
+          Serial.println("Already on Bottom!");
+        }
+
+        while(buttonState == 1){
+          buttonState = digitalRead(btnDownPin);
+        }
+        buttonState = false;
+      }
+    }
   }
 }
-
-
 
 void moveMotor(int direction, int steps){
-  Serial.println(position);
-
-  if(((position == TOP) && (direction == DOWN)) || ((position == BOTTOM) && (direction == UP)))
-  {
-    Serial.println("Movement started");
-    digitalWrite(directionPin, direction);
-  
-    for(int n = 0; n < steps; n++) {
-
-      digitalWrite(stepPin, HIGH);
-      delayMicroseconds(pulseWidthMicros); // this line is probably unnecessary
-      digitalWrite(stepPin, LOW);
-      delayMicroseconds(millisbetweenSteps*50); // this line is probably unnecessary
-      digitalWrite(ledPin, !digitalRead(ledPin));
-
-    }
-
-    if (position == BOTTOM)
-      position = TOP;
-    else 
-      position = BOTTOM;
-
+  digitalWrite(directionPin, direction);
+  for(int i = 0; i < steps; i++){
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(fastPulseWidth);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(fastPulseWidth);
   }
-  else {
-      Serial.println("Criteria for movement not met");
-  }
-
 }
